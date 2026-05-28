@@ -1,0 +1,13 @@
+aiortc
+boto3
+python-dotenv
+loguru
+fastapi
+uvicorn
+av
+requests
+aws-sdk-bedrock-runtime
+smithy-aws-core
+smithy-core
+smithy-http
+aiohttp

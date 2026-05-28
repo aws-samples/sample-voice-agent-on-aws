@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Voice Agent (KVS + Nova Sonic)</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+               background: #f5f5f5; color: #333; padding: 20px; }
+        .container { max-width: 700px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 8px; font-size: 24px; }
+        .subtitle { text-align: center; color: #666; margin-bottom: 24px; font-size: 14px; }
+
+        .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 16px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card h2 { font-size: 16px; margin-bottom: 12px; color: #555; }
+
+        label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; }
+        input[type="text"], input[type="checkbox"] { margin-bottom: 8px; }
+        input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;
+                             font-size: 14px; }
+        .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+        .checkbox-row label { margin-bottom: 0; }
+
+        .status { text-align: center; font-size: 18px; padding: 12px; font-weight: 500; }
+        .status.disconnected { color: #999; }
+        .status.connecting { color: #f0ad4e; }
+        .status.connected { color: #5cb85c; }
+
+        .btn-row { display: flex; gap: 8px; justify-content: center; margin: 16px 0; }
+        button { padding: 10px 24px; font-size: 15px; border: none; border-radius: 6px;
+                 cursor: pointer; font-weight: 500; transition: background 0.2s; }
+        #connect-btn { background: #4a90d9; color: white; }
+        #connect-btn:hover { background: #357abd; }
+        #connect-btn:disabled { background: #ccc; cursor: not-allowed; }
+        #disconnect-btn { background: #d9534f; color: white; display: none; }
+        #disconnect-btn:hover { background: #c9302c; }
+
+        #log { max-height: 300px; overflow-y: auto; font-family: 'SF Mono', Monaco, monospace;
+               font-size: 12px; line-height: 1.6; padding: 12px; background: #1e1e1e; color: #d4d4d4;
+               border-radius: 6px; }
+        #log .info { color: #569cd6; }
+        #log .success { color: #6a9955; }
+        #log .error { color: #f44747; }
+        #log .warn { color: #dcdcaa; }
+
+        audio { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ WebRTC Voice Agent</h1>
+        <p class="subtitle">KVS + Nova Sonic — Real-time speech-to-speech via WebRTC</p>
+
+        <div class="card">
+            <div class="checkbox-row">
+                <input type="checkbox" id="turn-only">
+                <label for="turn-only">Force TURN relay only</label>
+            </div>
+        </div>
+
+        <p class="status disconnected" id="status">Disconnected</p>
+
+        <div class="btn-row">
+            <button id="connect-btn">Connect</button>
+            <button id="disconnect-btn">Disconnect</button>
+        </div>
+
+        <audio id="audio-el" autoplay></audio>
+
+        <div class="card">
+            <h2>Log</h2>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script>
+        // These are injected by client.py based on --local or --runtime-arn
+        const AGENT_URL = "";
+        const MODE = "proxy";
+
+        let connected = false;
+        let peerConnection = null;
+        let pcId = null;
+
+        const $ = id => document.getElementById(id);
+
+        function log(msg, cls = "info") {
+            const line = document.createElement("div");
+            line.className = cls;
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            $("log").appendChild(line);
+            $("log").scrollTop = $("log").scrollHeight;
+        }
+
+        function setStatus(text, cls = "disconnected") {
+            $("status").textContent = text;
+            $("status").className = `status ${cls}`;
+            if (cls === "disconnected") {
+                $("connect-btn").style.display = "";
+                $("disconnect-btn").style.display = "none";
+            } else {
+                $("connect-btn").style.display = "none";
+                $("disconnect-btn").style.display = "";
+            }
+            connected = cls === "connected";
+        }
+
+        async function invokeAction(action, data = {}) {
+            const payload = { action, data: { ...data, turnOnly: $("turn-only").checked } };
+
+            if (MODE === "local" && AGENT_URL) {
+                // Direct call to local agent
+                const resp = await fetch(`${AGENT_URL}/invocations`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+                return resp.json();
+            }
+
+            // Proxy through client.py
+            const resp = await fetch("/invocations", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            return resp.json();
+        }
+
+        async function connect() {
+            try {
+                setStatus("Connecting...", "connecting");
+                log("Fetching ICE config from KVS...");
+
+                const { iceServers } = await invokeAction("ice_config");
+                log(`Received ${iceServers.length} ICE server(s)`, "success");
+
+                const config = { iceServers };
+                if ($("turn-only").checked) {
+                    config.iceTransportPolicy = "relay";
+                    log("Forcing TURN relay only", "warn");
+                }
+
+                const pc = new RTCPeerConnection(config);
+                const pendingCandidates = [];
+                let canSend = false;
+
+                pc.ontrack = e => {
+                    log("Received remote audio track", "success");
+                    $("audio-el").srcObject = e.streams[0];
+                };
+
+                pc.oniceconnectionstatechange = () => log(`ICE: ${pc.iceConnectionState}`);
+
+                pc.onconnectionstatechange = async () => {
+                    log(`Connection: ${pc.connectionState}`);
+                    if (pc.connectionState === "connected") {
+                        setStatus("Connected ✓", "connected");
+                        log("WebRTC connection established", "success");
+                    } else if (pc.connectionState === "disconnected" || pc.connectionState === "failed") {
+                        setStatus("Disconnected", "disconnected");
+                    }
+                };
+
+                pc.onicecandidate = async e => {
+                    if (!e.candidate) { log("All ICE candidates sent"); return; }
+                    const c = {
+                        candidate: e.candidate.candidate,
+                        sdp_mid: e.candidate.sdpMid,
+                        sdp_mline_index: e.candidate.sdpMLineIndex,
+                    };
+                    if (canSend) {
+                        await invokeAction("ice_candidate", { pc_id: pcId, candidates: [c] });
+                    } else {
+                        pendingCandidates.push(c);
+                    }
+                };
+
+                log("Requesting microphone access...");
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                log("Microphone access granted", "success");
+
+                pc.addTransceiver(stream.getAudioTracks()[0], { direction: "sendrecv" });
+
+                log("Creating WebRTC offer...");
+                const offer = await pc.createOffer({ offerToReceiveAudio: 1 });
+                await pc.setLocalDescription(offer);
+
+                log("Sending offer to agent...");
+                const answer = await invokeAction("offer", { sdp: offer.sdp, type: offer.type });
+                pcId = answer.pc_id;
+                log(`Received answer (pc_id: ${pcId})`, "success");
+
+                await pc.setRemoteDescription(answer);
+
+                // Flush queued ICE candidates
+                canSend = true;
+                for (const c of pendingCandidates) {
+                    await invokeAction("ice_candidate", { pc_id: pcId, candidates: [c] });
+                }
+
+                peerConnection = pc;
+            } catch (err) {
+                log(`Error: ${err.message}`, "error");
+                setStatus("Disconnected", "disconnected");
+            }
+        }
+
+        async function disconnect() {
+            if (pcId) {
+                try { await invokeAction("disconnect", { pc_id: pcId }); } catch (e) {}
+            }
+            if (peerConnection) {
+                peerConnection.close();
+                peerConnection = null;
+            }
+            pcId = null;
+            setStatus("Disconnected", "disconnected");
+            log("Disconnected");
+        }
+
+        $("connect-btn").addEventListener("click", connect);
+        $("disconnect-btn").addEventListener("click", disconnect);
+    </script>
+</body>
+</html>

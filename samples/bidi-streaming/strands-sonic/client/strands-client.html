@@ -1,0 +1,1601 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strands BidiAgent + Nova Sonic</title>
+    <!-- AWS SDK v3 for SigV4 signing -->
+    <script src="https://cdn.jsdelivr.net/npm/@aws-sdk/client-bedrock-agent-runtime@3/dist-browser/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@aws-sdk/credential-providers@3/dist-browser/index.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            height: calc(100vh - 20px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        
+        .header-text {
+            text-align: left;
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header p {
+            opacity: 0.95;
+            font-size: 12px;
+        }
+        
+        .content {
+            padding: 15px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        #status { 
+            padding: 8px 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            min-width: 140px;
+            text-align: center;
+        }
+        
+        .connected { 
+            background: rgba(129, 199, 132, 0.95);
+            color: white;
+        }
+        
+        .disconnected { 
+            background: rgba(229, 115, 115, 0.95);
+            color: white;
+        }
+        
+        #controls { 
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            max-width: 500px;
+        }
+        
+        #textInputSection {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        
+        #textInput {
+            flex: 1;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        #textInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        #textInput:disabled {
+            opacity: 0.5;
+        }
+        
+        #sendTextBtn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            white-space: nowrap;
+            flex: 0 0 auto;
+        }
+        
+        button { 
+            flex: 1;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        }
+        
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        #toggleBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        #toggleBtn.connected {
+            background: linear-gradient(135deg, #e57373 0%, #ef5350 100%);
+        }
+        
+        .config-section {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        
+        .form-group {
+            margin-bottom: 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+            color: #333;
+            font-size: 11px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+
+        
+        .panels-container { 
+            display: flex;
+            gap: 15px;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+        
+        .panel { 
+            flex: 1;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        
+        .panel h2 { 
+            margin: 0;
+            padding: 10px 15px;
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-bottom: none;
+            flex-shrink: 0;
+        }
+        
+        .panel-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            flex-shrink: 0;
+        }
+        
+        .event-filter {
+            padding: 6px 15px 10px 15px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .event-filter input {
+            width: 100%;
+            padding: 6px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 12px;
+            font-family: inherit;
+        }
+        
+        .event-filter input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .event-filter input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .event.hidden {
+            display: none;
+        }
+        
+        #messages { 
+            height: 0;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 15px;
+            background: #fafafa;
+        }
+        
+        #messages::-webkit-scrollbar,
+        #events::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        #messages::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        
+        .message { 
+            margin: 8px 0;
+            padding: 10px 14px;
+            border-radius: 14px;
+            max-width: 80%;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 13px;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .user { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .assistant { 
+            background: white;
+            border: 2px solid #e0e0e0;
+            color: #333;
+        }
+        
+        .system { 
+            background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%);
+            color: #f57f17;
+            font-style: italic;
+            text-align: center;
+            margin: 10px auto;
+            max-width: 60%;
+            font-size: 12px;
+        }
+        
+        .tool { 
+            background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%);
+            color: #2e7d32;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        
+        #events { 
+            height: 0;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 15px;
+            background: #1e1e1e;
+            font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+            font-size: 11px;
+        }
+        
+        #events::-webkit-scrollbar-track {
+            background: #2d2d2d;
+        }
+        
+        #events::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        
+        .event { 
+            margin: 6px 0;
+            padding: 8px 10px;
+            border-left: 3px solid #667eea;
+            background: #2d2d2d;
+            color: #d4d4d4;
+            border-radius: 4px;
+            animation: slideIn 0.2s ease;
+        }
+        
+        .event.sent { 
+            border-left-color: #4caf50;
+            background: #1a2e1a;
+        }
+        
+        .event.received { 
+            border-left-color: #2196f3;
+            background: #1a2533;
+        }
+        
+        .event-type { 
+            color: #ffa726;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 3px;
+        }
+        
+        .event-time { 
+            color: #9e9e9e;
+            font-size: 9px;
+            margin-bottom: 4px;
+        }
+        
+        .event-data { 
+            color: #81c784;
+            margin-top: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.4;
+            font-size: 10px;
+        }
+        
+        .event-data.audio-event {
+            max-height: 100px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .event-data.audio-event::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .event-data.audio-event::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+        
+        .event-data.audio-event::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 2px;
+        }
+        
+        /* Modal styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal h2 {
+            margin: 0 0 20px 0;
+            color: #667eea;
+            font-size: 24px;
+        }
+        
+        .modal-form-group {
+            margin-bottom: 16px;
+        }
+        
+        .modal-form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+            font-size: 13px;
+        }
+        
+        .modal-form-group input,
+        .modal-form-group select,
+        .modal-form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-form-group textarea {
+            min-height: 120px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .modal-form-group input:focus,
+        .modal-form-group select:focus,
+        .modal-form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .modal-form-group small {
+            display: block;
+            margin-top: 4px;
+            color: #666;
+            font-size: 11px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+        
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px 24px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .config-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 4px;
+            font-size: 11px;
+            color: #667eea;
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-text">
+                <h1>🎙️ Strands BidiAgent + Nova Sonic</h1>
+            </div>
+            <div id="status" class="disconnected">Disconnected</div>
+        </div>
+        
+        <div class="content">
+            <div class="config-section">
+                <div class="form-group">
+                    <label for="presignedUrl">🔐 Pre-signed WebSocket URL (SigV4 Query String)</label>
+                    <input type="text" id="presignedUrl" placeholder="wss://endpoint/runtimes/arn/ws?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=...&X-Amz-Signature=...">
+                    <small style="color: #666; font-size: 12px; margin-top: 4px; display: block;">
+                        Paste the complete pre-signed URL with SigV4 authentication parameters in the query string
+                    </small>
+                </div>
+            </div>
+            
+            <div id="controls">
+                <button id="toggleBtn" onclick="toggleConnection()">🚀 Start Conversation</button>
+                <button id="configBtn" onclick="openConfigModal()" style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white;">⚙️ Configure</button>
+                <button id="memoryBtn" onclick="openMemoryModal()" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: white;">💬 History</button>
+            </div>
+            
+            <div class="panels-container">
+                <div class="panel" style="flex: 1;">
+                    <h2>💬 Conversation</h2>
+                    <div id="messages"></div>
+                </div>
+                <div class="panel" id="eventsPanel" style="flex: 1; display: none;">
+                    <div class="panel-header">
+                        <h2>📡 Raw Events</h2>
+                        <div class="event-filter">
+                            <input type="text" id="eventFilter" placeholder="🔍 Filter events by keyword..." oninput="filterEvents()" />
+                        </div>
+                    </div>
+                    <div id="events"></div>
+                </div>
+            </div>
+            <div style="margin-top: 6px; text-align: right;">
+                <button id="toggleEventsBtn" onclick="toggleEventsPanel()" style="padding: 4px 12px; font-size: 11px; background: #444; color: #ccc; box-shadow: none;">📡 Show Events</button>
+            </div>
+            
+            <div id="textInputSection" style="margin-top: 10px; flex-shrink: 0;">
+                <input type="text" id="textInput" placeholder="Type a message and press Enter..." disabled>
+                <button id="sendTextBtn" onclick="sendTextMessage()" disabled>📤 Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Configuration Modal -->
+    <div id="configModal" class="modal-overlay">
+        <div class="modal">
+            <h2>⚙️ Agent Configuration</h2>
+            
+            <div class="modal-form-group">
+                <label for="modalProfile">📋 Profile</label>
+                <select id="modalProfile" onchange="applyProfile()">
+                </select>
+                <small>Load a pre-configured profile to populate the fields below</small>
+            </div>
+            
+            <div class="modal-form-group">
+                <label for="modalVoice">🎤 Voice</label>
+                <select id="modalVoice">
+                    <optgroup label="English (US) — Polyglot">
+                        <option value="tiffany">Tiffany (Female, en-US) ★ Multilingual</option>
+                        <option value="matthew" selected>Matthew (Male, en-US) ★ Multilingual</option>
+                    </optgroup>
+                    <optgroup label="English (UK)">
+                        <option value="amy">Amy (Female, en-GB)</option>
+                    </optgroup>
+                    <optgroup label="English (Australia)">
+                        <option value="olivia">Olivia (Female, en-AU)</option>
+                    </optgroup>
+                    <optgroup label="English (Indian)">
+                        <option value="kiara">Kiara (Female, en-IN)</option>
+                        <option value="arjun">Arjun (Male, en-IN)</option>
+                    </optgroup>
+                    <optgroup label="French">
+                        <option value="ambre">Ambre (Female, fr-FR)</option>
+                        <option value="florian">Florian (Male, fr-FR)</option>
+                    </optgroup>
+                    <optgroup label="Italian">
+                        <option value="beatrice">Beatrice (Female, it-IT)</option>
+                        <option value="lorenzo">Lorenzo (Male, it-IT)</option>
+                    </optgroup>
+                    <optgroup label="German">
+                        <option value="tina">Tina (Female, de-DE)</option>
+                        <option value="lennart">Lennart (Male, de-DE)</option>
+                    </optgroup>
+                    <optgroup label="Spanish (US)">
+                        <option value="lupe">Lupe (Female, es-US)</option>
+                        <option value="carlos">Carlos (Male, es-US)</option>
+                    </optgroup>
+                    <optgroup label="Portuguese (Brazil)">
+                        <option value="carolina">Carolina (Female, pt-BR)</option>
+                        <option value="leo">Leo (Male, pt-BR)</option>
+                    </optgroup>
+                    <optgroup label="Hindi">
+                        <option value="kiara">Kiara (Female, hi-IN)</option>
+                        <option value="arjun">Arjun (Male, hi-IN)</option>
+                    </optgroup>
+                </select>
+                <small>Tiffany & Matthew are polyglot voices that speak all supported languages</small>
+            </div>
+            
+            <div class="modal-form-group" style="display: none;">
+                <label for="modalModelId">🤖 Model</label>
+                <select id="modalModelId" onchange="updateModelConfig()">
+                    <option value="amazon.nova-2-sonic-v1:0" selected>Amazon Nova Sonic</option>
+                </select>
+            </div>
+            
+            <div class="modal-form-group" id="apiKeyGroup" style="display: none;">
+                <label for="modalApiKey">🔑 API Key</label>
+                <input type="password" id="modalApiKey" placeholder="Enter your API key...">
+                <small id="apiKeyHint">Required for the selected model</small>
+            </div>
+            
+
+            
+            <div class="modal-form-group" style="display: flex; gap: 12px;">
+                <div style="flex: 1;">
+                    <label for="modalInputRate">�️ Input Sample Rate</label>
+                    <select id="modalInputRate">
+                        <option value="16000" selected>16000 Hz</option>
+                        <option value="24000">24000 Hz</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label for="modalOutputRate">� Output Sample Rate</label>
+                    <select id="modalOutputRate">
+                        <option value="16000" selected>16000 Hz</option>
+                        <option value="24000">24000 Hz</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeConfigModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveConfig()">💾 Save Configuration</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Memory Modal -->
+    <div id="memoryModal" class="modal-overlay">
+        <div class="modal" style="max-width: 420px; min-width: 360px;">
+            <h2 style="margin-bottom: 16px;">💬 Chat History (AgentCore Memory)</h2>
+            
+            <div style="display: flex; align-items: center; padding: 12px; background: #f5f5f5; border-radius: 8px; margin-bottom: 16px;">
+                <div style="width: 30%; display: flex; justify-content: center;">
+                    <input type="checkbox" id="modalMemoryEnabled" onchange="toggleMemoryFields()" style="width: 20px; height: 20px; cursor: pointer;">
+                </div>
+                <div style="width: 70%;">
+                    <label for="modalMemoryEnabled" style="margin: 0; font-weight: 600; color: #333; font-size: 14px; cursor: pointer; display: block;">Enable Memory</label>
+                    <small style="color: #666; font-size: 11px;">Load and store chat history across sessions</small>
+                </div>
+            </div>
+            
+            <div id="memoryFields" style="display: none;">
+                <div style="display: flex; align-items: center; margin-bottom: 14px;">
+                    <label for="modalActorId" style="width: 30%; font-size: 12px; font-weight: 600; color: #555; text-align: right; padding-right: 12px;">User ID</label>
+                    <div style="width: 70%;">
+                        <input type="text" id="modalActorId" placeholder="e.g., user-sarah" value="user-test" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; margin-bottom: 14px;">
+                    <label for="modalSessionId" style="width: 30%; font-size: 12px; font-weight: 600; color: #555; text-align: right; padding-right: 12px;">Session ID</label>
+                    <div style="width: 70%;">
+                        <input type="text" id="modalSessionId" placeholder="Leave empty for new" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px;">
+                    </div>
+                </div>
+                <div style="padding: 8px 12px; background: #e8f5e9; border-radius: 6px; margin-bottom: 12px;">
+                    <small style="color: #2e7d32; font-size: 11px;">💡 Reuse a session ID to load previous history. Leave empty to start fresh.</small>
+                </div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="btn-secondary" onclick="closeMemoryModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveMemoryConfig()">💾 Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let ws = null;
+        let audioContext = null;
+        let isRecording = false;
+        let audioPlaybackContext = null;
+        
+        // Configuration storage
+        let agentConfig = {
+            voice: 'matthew',
+            modelId: 'amazon.nova-2-sonic-v1:0',
+            region: 'us-east-1',
+            inputSampleRate: 24000,
+            outputSampleRate: 24000,
+            apiKey: '',
+            memoryEnabled: false,
+            actorId: 'user-test',
+            sessionId: '',
+            invocationState: null
+        };
+        
+        // Model-specific configurations
+        const MODEL_CONFIGS = {
+            'amazon.nova-2-sonic-v1:0': {
+                inputSampleRate: 24000,
+                outputSampleRate: 24000,
+                displayName: 'Amazon Nova 2 Sonic',
+                supportsVoice: true
+            }
+        };
+        
+        // Transcript buffering for better display
+        let transcriptBuffer = {
+            user: { text: '', timer: null, element: null },
+            assistant: { text: '', timer: null, element: null }
+        };
+        const TRANSCRIPT_BUFFER_DELAY = 1000; // 1 second delay before finalizing
+        
+        // Profiles loaded from server (with embedded fallback)
+        let profiles = [
+            {
+                name: "Finance Agent",
+                model_id: "amazon.nova-2-sonic-v1:0",
+                voice: "matthew",
+                gateway_arns: [],
+                tools: ["mcp"],
+                system_prompt: "You are a helpful customer service assistant for Any Bank. Follow this structured flow in every interaction:\n\n1. Greeting\n\"Hello! Welcome to Any Bank. Could I please get your name to start?\"\n\n2. Personalization\nUse the user\u2019s name naturally in the conversation once obtained.\n\n3. Authentication\nBefore providing any account information or services, authenticate the user:\n\"Thank you, [User's Name]. For security purposes, I'll need to verify your identity. Could you please provide your account ID and your date of birth?\"\n\nOnce you have both pieces of information, call authenticate_user with the account_number and use verify_identity if additional verification is needed.\nConvert numeric IDs to words when speaking them.\nFor dates, speak naturally.\nDo not proceed with any account-specific requests until authentication is complete.\nOnce authenticated, do not re-ask for these credentials during the same conversation.\n\n4. Inquiry Handling\nAfter successful authentication:\n\"Great! Your identity has been verified. How may I assist you today? I can help with banking, mortgage, and general FAQ inquiries.\"\n\nFor banking inquiries use: get_account_balance, get_recent_transactions, transfer_funds, get_account_summary\nFor mortgage inquiries use: get_mortgage_rates, calculate_mortgage_payment, check_mortgage_eligibility, get_mortgage_application_status\nFor general questions use: search_anybank_faq, answer_anybank_question\n\nGeneral mortgage information and FAQ questions do not require authentication, but account-specific information always does.\n\n5. Important Notice\nIf the user asks about non-banking or non-mortgage topics, respond:\n\"Sorry, I can only help with banking or mortgage-related inquiries.\"\n\nRemember: Always greet first, authenticate before account info, use their name, convert IDs to words, stay focused on banking topics, be professional and helpful."
+            },
+            {
+                name: "General Assistant",
+                model_id: "amazon.nova-2-sonic-v1:0",
+                voice: "tiffany",
+                gateway_arns: [],
+                tools: ["get_current_time", "get_weather"],
+                system_prompt: "You are a friendly and helpful general-purpose assistant. Answer questions clearly and concisely. Be conversational and natural in your responses. You have access to a get_current_time tool for time-related questions and a get_weather tool for weather inquiries. When the user asks about weather, use the get_weather tool with the location they mention."
+            }
+        ];
+        
+        // Populate profile dropdown from embedded list
+        function loadProfiles() {
+            const select = document.getElementById('modalProfile');
+            select.innerHTML = '';
+            
+            profiles.forEach((profile, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = profile.name;
+                select.appendChild(option);
+            });
+            
+            if (profiles.length > 0) {
+                select.value = '0';
+                applyProfileToConfig(profiles[0]);
+            }
+        }
+        
+        // Apply selected profile to form fields
+        function applyProfile() {
+            const select = document.getElementById('modalProfile');
+            const index = select.value;
+            
+            const profile = profiles[index];
+            if (!profile) return;
+            
+            document.getElementById('modalVoice').value = profile.voice || 'matthew';
+            document.getElementById('modalModelId').value = profile.model_id || 'amazon.nova-2-sonic-v1:0';
+            // Store profile name and tools so config event can reference them
+            agentConfig.profileName = profile.name;
+            agentConfig.tools = profile.tools || [];
+            agentConfig.gatewayArns = profile.gateway_arns || [];
+            // Update voice and API key field visibility based on selected model
+            updateModelConfig();
+        }
+        
+        // Apply a profile object directly to agentConfig (used on page load)
+        function applyProfileToConfig(profile) {
+            const modelId = profile.model_id || 'amazon.nova-2-sonic-v1:0';
+            const modelConfig = MODEL_CONFIGS[modelId];
+            agentConfig = {
+                voice: profile.voice || 'matthew',
+                modelId: modelId,
+                region: profile.region || 'us-east-1',
+                inputSampleRate: modelConfig ? modelConfig.inputSampleRate : 24000,
+                outputSampleRate: modelConfig ? modelConfig.outputSampleRate : 24000,
+                apiKey: '',
+                tools: profile.tools || [],
+                gatewayArns: profile.gateway_arns || [],
+                profileName: profile.name || 'General Assistant'
+            };
+            
+            // Also populate the modal form fields so they're ready when opened
+            document.getElementById('modalVoice').value = agentConfig.voice;
+            document.getElementById('modalModelId').value = agentConfig.modelId;
+            document.getElementById('modalApiKey').value = '';
+            
+            localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
+        }
+        
+        // Update model configuration when model changes
+        function updateModelConfig() {
+            const modelId = document.getElementById('modalModelId').value;
+            const config = MODEL_CONFIGS[modelId];
+            const apiKeyGroup = document.getElementById('apiKeyGroup');
+            const apiKeyHint = document.getElementById('apiKeyHint');
+            
+            if (config) {
+                // Update voice field visibility based on model support
+                const voiceGroup = document.getElementById('modalVoice').closest('.modal-form-group');
+                voiceGroup.style.display = config.supportsVoice ? 'block' : 'none';
+                
+                // Show API key field for non-Nova models
+                if (modelId.startsWith('amazon.nova')) {
+                    apiKeyGroup.style.display = 'none';
+                } else if (modelId.startsWith('gpt-')) {
+                    apiKeyGroup.style.display = 'block';
+                    apiKeyHint.textContent = 'OpenAI API key (OPENAI_API_KEY)';
+                } else if (modelId.startsWith('gemini')) {
+                    apiKeyGroup.style.display = 'block';
+                    apiKeyHint.textContent = 'Google API key (GOOGLE_API_KEY)';
+                }
+            }
+        }
+        
+        // Modal functions
+        function openConfigModal() {
+            // Populate modal with current config
+            document.getElementById('modalVoice').value = agentConfig.voice;
+            document.getElementById('modalModelId').value = agentConfig.modelId;
+            document.getElementById('modalApiKey').value = agentConfig.apiKey || '';
+            document.getElementById('modalInputRate').value = agentConfig.inputSampleRate;
+            document.getElementById('modalOutputRate').value = agentConfig.outputSampleRate;
+            
+            // Match profile dropdown to current config (find matching profile or default to first)
+            const select = document.getElementById('modalProfile');
+            select.value = '0';
+            for (let i = 0; i < profiles.length; i++) {
+                const p = profiles[i];
+                if (p.voice === agentConfig.voice &&
+                    p.model_id === agentConfig.modelId) {
+                    select.value = String(i);
+                    break;
+                }
+            }
+            
+            // Update voice and API key field visibility
+            updateModelConfig();
+            document.getElementById('configModal').classList.add('active');
+        }
+        
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.remove('active');
+        }
+        
+        function toggleMemoryFields() {
+            const enabled = document.getElementById('modalMemoryEnabled').checked;
+            document.getElementById('memoryFields').style.display = enabled ? 'block' : 'none';
+        }
+
+        function openMemoryModal() {
+            document.getElementById('modalMemoryEnabled').checked = agentConfig.memoryEnabled || false;
+            document.getElementById('modalActorId').value = agentConfig.actorId || '';
+            document.getElementById('modalSessionId').value = agentConfig.sessionId || '';
+            toggleMemoryFields();
+            document.getElementById('memoryModal').classList.add('active');
+        }
+
+        function closeMemoryModal() {
+            document.getElementById('memoryModal').classList.remove('active');
+        }
+
+        function saveMemoryConfig() {
+            const enabled = document.getElementById('modalMemoryEnabled').checked;
+            const actorId = document.getElementById('modalActorId').value.trim() || 'user-test';
+            const sessionId = document.getElementById('modalSessionId').value.trim();
+
+            agentConfig.memoryEnabled = enabled;
+            agentConfig.actorId = actorId;
+            agentConfig.sessionId = sessionId;
+            localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
+
+            const status = enabled ? `enabled (user=${actorId})` : 'disabled';
+            closeMemoryModal();
+            
+            // Show brief confirmation in the chat instead of alert
+            addMessage(`🧠 Memory ${status}. Applied on next connection.`, 'system');
+        }
+        
+        function saveConfig() {
+            try {
+                // Validate and save configuration
+                const voice = document.getElementById('modalVoice').value;
+                const modelId = document.getElementById('modalModelId').value;
+                const region = agentConfig.region || 'us-east-1';
+                const apiKey = document.getElementById('modalApiKey').value.trim();
+                const inputSampleRate = parseInt(document.getElementById('modalInputRate').value);
+                const outputSampleRate = parseInt(document.getElementById('modalOutputRate').value);
+                
+                // Save configuration
+                agentConfig = {
+                    voice: voice,
+                    modelId: modelId,
+                    region: region,
+                    inputSampleRate: inputSampleRate,
+                    outputSampleRate: outputSampleRate,
+                    apiKey: apiKey,
+                    memoryEnabled: agentConfig.memoryEnabled || false,
+                    actorId: agentConfig.actorId || '',
+                    sessionId: agentConfig.sessionId || '',
+                    invocationState: agentConfig.invocationState || null,
+                    tools: agentConfig.tools || [],
+                    gatewayArns: agentConfig.gatewayArns || [],
+                    profileName: agentConfig.profileName || 'General Assistant'
+                };
+                
+                // Store in localStorage for persistence
+                localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
+                
+                closeConfigModal();
+                
+            } catch (e) {
+                alert('Error saving configuration: ' + e.message);
+            }
+        }
+        
+        // Load configuration from localStorage on page load
+        function loadConfig() {
+            try {
+                const saved = localStorage.getItem('agentConfig');
+                if (saved) {
+                    const savedConfig = JSON.parse(saved);
+                    // Only merge if modelId is valid
+                    if (savedConfig.modelId && MODEL_CONFIGS[savedConfig.modelId]) {
+                        agentConfig = { ...agentConfig, ...savedConfig };
+                    } else {
+                        // Invalid saved config, clear it
+                        localStorage.removeItem('agentConfig');
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading config:', e);
+                localStorage.removeItem('agentConfig');
+            }
+        }
+    
+        function addMessage(content, type, isHistory) {
+            const messages = document.getElementById('messages');
+            const message = document.createElement('div');
+            message.className = 'message ' + type;
+            if (isHistory) {
+                message.style.opacity = '0.6';
+                message.style.fontStyle = 'italic';
+                message.style.borderLeft = '3px solid #ccc';
+                message.style.paddingLeft = '8px';
+            }
+            message.textContent = content;
+            messages.appendChild(message);
+            messages.scrollTop = messages.scrollHeight;
+            return message;
+        }
+        
+        function handleBufferedTranscript(role, text) {
+            // Validate role to prevent issues
+            const allowedRoles = ['user', 'assistant'];
+            if (!allowedRoles.includes(role)) {
+                console.warn(`Invalid role: ${role}`);
+                return;
+            }
+            
+            const buffer = transcriptBuffer[role];
+            
+            // Clear existing timer
+            if (buffer.timer) {
+                clearTimeout(buffer.timer);
+            }
+            
+            // Append new text
+            buffer.text += (buffer.text ? ' ' : '') + text;
+            
+            // Update or create message element
+            if (buffer.element && buffer.element.parentNode) {
+                // Update existing message
+                const prefix = role === 'user' ? '🎤 User' : '🔊 Assistant';
+                buffer.element.textContent = `${prefix}: ${buffer.text}`;
+            } else {
+                // Create new message
+                const prefix = role === 'user' ? '🎤 User' : '🔊 Assistant';
+                buffer.element = addMessage(`${prefix}: ${buffer.text}`, role);
+            }
+            
+            // Set timer to finalize the message
+            buffer.timer = setTimeout(() => {
+                buffer.text = '';
+                buffer.element = null;
+                buffer.timer = null;
+            }, TRANSCRIPT_BUFFER_DELAY);
+        }
+        
+        function clearTranscriptBuffers() {
+            // Clear all buffers and timers
+            for (let role in transcriptBuffer) {
+                if (transcriptBuffer[role].timer) {
+                    clearTimeout(transcriptBuffer[role].timer);
+                }
+                transcriptBuffer[role] = { text: '', timer: null, element: null };
+            }
+        }
+        
+        function toggleEventsPanel() {
+            const panel = document.getElementById('eventsPanel');
+            const btn = document.getElementById('toggleEventsBtn');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'flex';
+                btn.textContent = '📡 Hide Events';
+            } else {
+                panel.style.display = 'none';
+                btn.textContent = '📡 Show Events';
+            }
+        }
+        
+        function filterEvents() {
+            const filterInput = document.getElementById('eventFilter');
+            const filterText = filterInput.value.toLowerCase();
+            const events = document.querySelectorAll('#events .event');
+            
+            events.forEach(event => {
+                const eventText = event.textContent.toLowerCase();
+                if (eventText.includes(filterText)) {
+                    event.classList.remove('hidden');
+                } else {
+                    event.classList.add('hidden');
+                }
+            });
+        }
+        
+        function addEvent(direction, type, data) {
+            const events = document.getElementById('events');
+            const event = document.createElement('div');
+            event.className = 'event ' + direction;
+            
+            const time = new Date().toLocaleTimeString();
+            const arrow = direction === 'sent' ? '⬆️' : '⬇️';
+            
+            let displayData = data;
+            if (typeof data === 'object') {
+                displayData = JSON.parse(JSON.stringify(data));
+                
+                // Truncate audio field for bidi_audio_input events
+                if (type === 'bidi_audio_input' && displayData.audio && typeof displayData.audio === 'string') {
+                    if (displayData.audio.length > 20) {
+                        displayData.audio = displayData.audio.substring(0, 20) + '... [truncated]';
+                    }
+                }
+                
+                // Truncate audio field for bidi_audio_stream events
+                if (type === 'bidi_audio_stream' && displayData.audio && typeof displayData.audio === 'string') {
+                    if (displayData.audio.length > 20) {
+                        displayData.audio = displayData.audio.substring(0, 20) + '... [truncated]';
+                    }
+                }
+            }
+            
+            const dataStr = typeof displayData === 'object' ? JSON.stringify(displayData, null, 2) : displayData;
+            
+            // Create elements safely without innerHTML
+            const timeDiv = document.createElement('div');
+            timeDiv.className = 'event-time';
+            timeDiv.textContent = `${time} ${arrow}`;
+            
+            const typeDiv = document.createElement('div');
+            typeDiv.className = 'event-type';
+            typeDiv.textContent = type;
+            
+            const dataDiv = document.createElement('div');
+            dataDiv.className = 'event-data';
+            dataDiv.textContent = dataStr;
+            
+            event.appendChild(timeDiv);
+            event.appendChild(typeDiv);
+            event.appendChild(dataDiv);
+            
+            events.appendChild(event);
+            events.scrollTop = events.scrollHeight;
+        }
+    
+        function updateStatus(connected, recording = false) {
+            const status = document.getElementById('status');
+            const toggleBtn = document.getElementById('toggleBtn');
+            const textInput = document.getElementById('textInput');
+            const sendTextBtn = document.getElementById('sendTextBtn');
+            
+            if (connected) {
+                status.textContent = recording ? '🔴 Recording' : '🟢 Connected';
+                status.className = 'connected';
+                toggleBtn.textContent = '🛑 End Conversation';
+                toggleBtn.className = 'connected';
+                textInput.disabled = false;
+                sendTextBtn.disabled = false;
+            } else {
+                status.textContent = '⚫ Disconnected';
+                status.className = 'disconnected';
+                toggleBtn.textContent = '🚀 Start Conversation';
+                toggleBtn.className = '';
+                textInput.disabled = true;
+                sendTextBtn.disabled = true;
+            }
+        }
+        
+        function toggleConnection() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                disconnect();
+            } else {
+                connect();
+            }
+        }
+    
+        // Audio playback using AudioWorklet with ring buffer (based on AWS Nova Sonic sample)
+        let isBotSpeaking = false;
+        let botSpeakingTimeout = null;
+        let playerWorkletNode = null;
+
+        // AudioWorklet processor code (inline as Blob URL)
+        const playerProcessorCode = `
+class ExpandableBuffer {
+    constructor() {
+        this.buffer = new Float32Array(8000);
+        this.readIndex = 0;
+        this.writeIndex = 0;
+        this.isInitialBuffering = true;
+        this.hasStartedPlayback = false;
+        this.initialBufferLength = 4800; // 300ms at 16kHz
+    }
+    write(samples) {
+        if (this.writeIndex + samples.length > this.buffer.length) {
+            if (samples.length <= this.readIndex) {
+                const sub = this.buffer.subarray(this.readIndex, this.writeIndex);
+                this.buffer.set(sub);
+            } else {
+                const newLen = (samples.length + this.writeIndex - this.readIndex) * 2;
+                const newBuf = new Float32Array(newLen);
+                newBuf.set(this.buffer.subarray(this.readIndex, this.writeIndex));
+                this.buffer = newBuf;
+            }
+            this.writeIndex -= this.readIndex;
+            this.readIndex = 0;
+        }
+        this.buffer.set(samples, this.writeIndex);
+        this.writeIndex += samples.length;
+        if (this.writeIndex - this.readIndex >= this.initialBufferLength) {
+            this.isInitialBuffering = false;
+            this.hasStartedPlayback = true;
+        }
+    }
+    read(dest) {
+        let len = 0;
+        if (!this.isInitialBuffering) {
+            len = Math.min(dest.length, this.writeIndex - this.readIndex);
+        }
+        dest.set(this.buffer.subarray(this.readIndex, this.readIndex + len));
+        this.readIndex += len;
+        if (len < dest.length) dest.fill(0, len);
+        // Don't re-enter initial buffering after playback started — just output silence
+    }
+    clear() {
+        this.readIndex = 0;
+        this.writeIndex = 0;
+        this.isInitialBuffering = true;
+        this.hasStartedPlayback = false;
+    }
+}
+class AudioPlayerProcessor extends AudioWorkletProcessor {
+    constructor() {
+        super();
+        this.buf = new ExpandableBuffer();
+        this.port.onmessage = (e) => {
+            if (e.data.type === 'audio') this.buf.write(e.data.samples);
+            else if (e.data.type === 'barge-in') this.buf.clear();
+        };
+    }
+    process(inputs, outputs) {
+        this.buf.read(outputs[0][0]);
+        return true;
+    }
+}
+registerProcessor('audio-player-processor', AudioPlayerProcessor);
+`;
+
+        async function initAudioPlayer(sampleRate) {
+            // Always create fresh context (previous one may have been closed)
+            if (audioPlaybackContext) {
+                try { audioPlaybackContext.close(); } catch(e) {}
+            }
+            playerWorkletNode = null;
+            audioPlaybackContext = new AudioContext({ sampleRate: sampleRate });
+            const blob = new Blob([playerProcessorCode], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            await audioPlaybackContext.audioWorklet.addModule(url);
+            URL.revokeObjectURL(url);
+            playerWorkletNode = new AudioWorkletNode(audioPlaybackContext, 'audio-player-processor');
+            playerWorkletNode.connect(audioPlaybackContext.destination);
+        }
+
+        async function playAudioOutput(base64Audio, sampleRate) {
+            if (!audioPlaybackContext) {
+                await initAudioPlayer(sampleRate);
+            }
+            if (audioPlaybackContext.state === 'suspended') {
+                await audioPlaybackContext.resume();
+            }
+            isBotSpeaking = true;
+
+            // Decode base64 to float32 PCM
+            const bin = atob(base64Audio);
+            const bytes = new Uint8Array(bin.length);
+            for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+            const int16 = new Int16Array(bytes.buffer);
+            const float32 = new Float32Array(int16.length);
+            for (let i = 0; i < int16.length; i++) float32[i] = int16[i] / 32768.0;
+
+            // Send samples to worklet ring buffer
+            playerWorkletNode.port.postMessage({ type: 'audio', samples: float32 });
+            
+            // Reset drain timer — bot is still producing audio
+            clearTimeout(botSpeakingTimeout);
+            botSpeakingTimeout = setTimeout(() => {
+                isBotSpeaking = false;
+            }, 3000); // 3s after last chunk = bot done speaking
+        }
+
+        function stopBotAudio() {
+            isBotSpeaking = false;
+            clearTimeout(botSpeakingTimeout);
+            if (playerWorkletNode) {
+                playerWorkletNode.port.postMessage({ type: 'barge-in' });
+            }
+            if (audioPlaybackContext) {
+                audioPlaybackContext.close();
+                audioPlaybackContext = null;
+            }
+            playerWorkletNode = null;
+        }
+
+    
+        function generateSessionId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            return Array.from({ length: 50 }, () => 
+                chars.charAt(Math.floor(Math.random() * chars.length))
+            ).join('');
+        }
+        
+        async function connect() {
+            // Clear previous messages and events
+            document.getElementById('messages').textContent = '';
+            document.getElementById('events').textContent = '';
+            clearTranscriptBuffers();
+            
+            // Get pre-signed URL
+            const presignedUrl = document.getElementById('presignedUrl').value.trim();
+            
+            if (!presignedUrl) {
+                addMessage('❌ Error: Pre-signed URL is required', 'system');
+                return;
+            }
+            
+            if (!presignedUrl.startsWith('ws://') && !presignedUrl.startsWith('wss://')) {
+                addMessage('❌ Error: URL must start with ws:// or wss://', 'system');
+                return;
+            }
+            
+            addMessage('🔐 Using SigV4 pre-signed URL', 'system');
+            addMessage(`🔗 Connecting...`, 'system');
+            
+            // Validate API key for non-Nova models
+            if (!agentConfig.modelId.startsWith('amazon.nova') && !agentConfig.apiKey) {
+                const provider = agentConfig.modelId.startsWith('gpt-') ? 'OpenAI' : 'Google';
+                addMessage(`❌ Error: ${provider} API key is required. Click Configure to set it.`, 'system');
+                return;
+            }
+            
+            try {
+                ws = new WebSocket(presignedUrl);
+                
+                ws.onerror = (error) => {
+                    addMessage(`❌ WebSocket error: ${error.message || 'Connection failed'}`, 'system');
+                    console.error('WebSocket error:', error);
+                    updateStatus(false);
+                };
+            
+                ws.onopen = async () => {
+                addMessage('Connected to BidiAgent', 'system');
+                updateStatus(true);
+                
+                // Initialize audio player (best-effort, don't block connection)
+                try {
+                    await initAudioPlayer(agentConfig.outputSampleRate);
+                    if (audioPlaybackContext && audioPlaybackContext.state === 'suspended') {
+                        await audioPlaybackContext.resume();
+                    }
+                } catch (e) {
+                    console.warn('Audio player init deferred:', e.message);
+                }
+                
+                // Send config event with full configuration
+                const configPayload = {
+                    type: "config",
+                    voice: agentConfig.voice,
+                    model_id: agentConfig.modelId,
+                    region: agentConfig.region,
+                    profile: agentConfig.profileName || "General Assistant",
+                    input_sample_rate: agentConfig.inputSampleRate,
+                    output_sample_rate: agentConfig.outputSampleRate,
+                    memory_enabled: agentConfig.memoryEnabled || false,
+                    actor_id: agentConfig.actorId || undefined,
+                    session_id: agentConfig.sessionId || undefined
+                };
+                
+                ws.send(JSON.stringify(configPayload));
+                addEvent('sent', 'config', configPayload);
+                
+                const modelConfig = MODEL_CONFIGS[agentConfig.modelId] || MODEL_CONFIGS['amazon.nova-2-sonic-v1:0'];
+                addMessage(`🤖 ${modelConfig.displayName}`, 'system');
+                addMessage(`� Voice: ${agentConfig.voice} | Audio: ${agentConfig.inputSampleRate}Hz/${agentConfig.outputSampleRate}Hz`, 'system');
+                if (agentConfig.memoryEnabled) {
+                    addMessage(`🧠 Memory: enabled (user=${agentConfig.actorId})`, 'system');
+                }
+                
+                // Automatically start recording
+                await startRecording();
+            };
+            
+            ws.onmessage = async (event) => {
+                const data = JSON.parse(event.data);
+                
+                // Log all received events
+                addEvent('received', data.type, data);
+                
+                switch (data.type) {
+                    case 'memory_history':
+                        // Display loaded conversation history
+                        if (data.turns && data.turns.length > 0) {
+                            addMessage(`📜 ── Loaded ${data.turns.length} turns from memory ──`, 'system');
+                            for (const turn of data.turns) {
+                                const prefix = turn.role === 'user' ? '🎤 User' : '🔊 Assistant';
+                                addMessage(`${prefix}: ${turn.content}`, turn.role, true);
+                            }
+                            addMessage(`📜 ── End of history ──`, 'system');
+                        }
+                        if (data.session_id) {
+                            addMessage(`🧠 Session ID: ${data.session_id}`, 'system');
+                            // Store the session ID for future reference
+                            agentConfig.sessionId = data.session_id;
+                            document.getElementById('modalSessionId').value = data.session_id;
+                            localStorage.setItem('agentConfig', JSON.stringify(agentConfig));
+                        }
+                        break;
+                    case 'bidi_audio_stream':
+                        // Audio output: use model-specific output sample rate from config
+                        const outputSampleRate = MODEL_CONFIGS[agentConfig.modelId] ? MODEL_CONFIGS[agentConfig.modelId].outputSampleRate : 16000;
+                        await playAudioOutput(data.audio, outputSampleRate);
+                        break;
+                    case 'bidi_transcript_stream':
+                        // Show user transcripts always (they only come as final)
+                        // Show assistant transcripts only when speculative (skip final to avoid duplicates)
+                        // Strip tool-call text from MCP Gateway transcripts
+                        if (agentConfig.modelId.startsWith('amazon.nova')) {
+                            if (data.role === 'user') {
+                                addMessage(`🎤 User: ${data.text}`, 'user');
+                            } else if (data.is_final === false || data.is_final === undefined) {
+                                let text = (data.text || '').trim();
+                                // Remove tool call patterns like "tool_name(arg1="val", arg2="val")"
+                                text = text.replace(/\w+\s*\([^)]*\)\s*/g, '').trim();
+                                if (text) {
+                                    addMessage(`🔊 Assistant: ${text}`, 'assistant');
+                                }
+                            }
+                        } else {
+                            handleBufferedTranscript(data.role, data.text);
+                        }
+                        break;
+                    case 'bidi_interruption':
+                        // User interrupted the agent - stop audio playback and clear buffers
+                        addMessage('🚫 [Interrupted - Barge-in detected]', 'system');
+                        clearTranscriptBuffers();
+                        stopBotAudio();
+                        break;
+                    case 'bidi_response_complete':
+                        // Response complete - model done generating.
+                        // Note: Nova Sonic may slightly truncate the last ~100ms of audio output.
+                        // This is model behavior, not a client issue.
+                        clearTimeout(botSpeakingTimeout);
+                        botSpeakingTimeout = setTimeout(() => {
+                            isBotSpeaking = false;
+                        }, 2000); // 2s for worklet buffer to fully drain
+                        break;
+                    case 'bidi_usage':
+                        // Token usage: silently logged in raw events panel
+                        // {"type": "bidi_usage", "inputTokens": 22, "outputTokens": 0, "totalTokens": 22}
+                        break;
+                    case 'tool_use_stream':
+                        addMessage(`🔧 Tool: ${data.current_tool_use.name}`, 'tool');
+                        break;
+                    case 'tool_result':
+                        const content = data.tool_result.content[0]?.text || JSON.stringify(data.tool_result.content);
+                        addMessage(`✅ Result: ${content}`, 'tool');
+                        break;
+                    case 'system':
+                        // System message from server (e.g., restart notification)
+                        addMessage(`ℹ️ ${data.message}`, 'system');
+                        break;
+                }
+            };
+            
+                ws.onclose = () => {
+                    addMessage('Disconnected', 'system');
+                    updateStatus(false);
+                    clearTranscriptBuffers();
+                    if (isRecording) stopRecording();
+                    // Reset all audio state for clean reconnect
+                    isBotSpeaking = false;
+                    clearTimeout(botSpeakingTimeout);
+                    playerWorkletNode = null;
+                    if (audioPlaybackContext) {
+                        audioPlaybackContext.close();
+                        audioPlaybackContext = null;
+                    }
+                };
+            } catch (error) {
+                addMessage(`❌ Failed to connect: ${error.message}`, 'system');
+                console.error('Connection error:', error);
+                updateStatus(false);
+            }
+        }
+    
+        function disconnect() {
+            if (isRecording) stopRecording();
+            if (ws) ws.close();
+        }
+    
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: { 
+                        channelCount: 1, 
+                        echoCancellation: true, 
+                        noiseSuppression: true,
+                        autoGainControl: true
+                    } 
+                });
+                
+                // Use configured input sample rate
+                const inputSampleRate = agentConfig.inputSampleRate;
+                
+                audioContext = new AudioContext({ latencyHint: 'interactive' });
+                const source = audioContext.createMediaStreamSource(stream);
+                const processor = audioContext.createScriptProcessor(512, 1, 1);
+                
+                let audioChunkCount = 0;
+                processor.onaudioprocess = (e) => {
+                    if (ws && ws.readyState === WebSocket.OPEN) {
+                        
+                        const inputData = e.inputBuffer.getChannelData(0);
+                        
+                        // Downsample to configured input sample rate
+                        const downsampleRatio = audioContext.sampleRate / inputSampleRate;
+                        const outputLength = Math.floor(inputData.length / downsampleRatio);
+                        const int16Data = new Int16Array(outputLength);
+                        
+                        for (let i = 0; i < outputLength; i++) {
+                            const sourceIndex = Math.floor(i * downsampleRatio);
+                            int16Data[i] = Math.max(-32768, Math.min(32767, inputData[sourceIndex] * 32768));
+                        }
+                        
+                        // Convert to base64
+                        const bytes = new Uint8Array(int16Data.buffer);
+                        let binary = '';
+                        for (let i = 0; i < bytes.length; i++) {
+                            binary += String.fromCharCode(bytes[i]);
+                        }
+                        const base64Audio = btoa(binary);
+                        
+                        const payload = {
+                            type: "bidi_audio_input",
+                            audio: base64Audio,
+                            format: "pcm",
+                            sample_rate: inputSampleRate,
+                            channels: 1
+                        };
+                        ws.send(JSON.stringify(payload));
+                        
+                        // Log every audio chunk with original format
+                        audioChunkCount++;
+                        addEvent('sent', 'bidi_audio_input', payload);
+                    }
+                };
+                
+                source.connect(processor);
+                processor.connect(audioContext.destination);
+                
+                isRecording = true;
+                updateStatus(true, true);
+                addMessage('🎤 Recording started - speak now', 'system');
+            } catch (err) {
+                addMessage('❌ Microphone access denied: ' + err.message, 'system');
+            }
+        }
+        
+        function stopRecording() {
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            isRecording = false;
+            addMessage('Recording stopped', 'system');
+        }
+        
+        function sendTextMessage() {
+            const input = document.getElementById('textInput');
+            const text = input.value.trim();
+            if (!text || !ws || ws.readyState !== WebSocket.OPEN) return;
+            
+            const payload = { type: "text_input", text: text };
+            ws.send(JSON.stringify(payload));
+            addEvent('sent', 'text_input', payload);
+            addMessage(`✍️ User: ${text}`, 'user');
+            input.value = '';
+        }
+        
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Load saved configuration
+            loadConfig();
+            
+            // Load profiles and apply default from server if specified
+            loadProfiles();
+            
+            // Apply --profile flag override (injected by client.py)
+            if (window._defaultProfile) {
+                const idx = profiles.findIndex(p => p.name === window._defaultProfile);
+                if (idx >= 0) {
+                    applyProfileToConfig(profiles[idx]);
+                    const select = document.getElementById('modalProfile');
+                    if (select) select.value = String(idx);
+                }
+            }
+            
+            // Always show History button (memory works in both local and deployed modes)
+            const urlField = document.getElementById('presignedUrl');
+            
+            // Enter key sends text message
+            document.getElementById('textInput').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') sendTextMessage();
+            });
+        });
+    </script>
+</body>
+</html>

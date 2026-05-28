@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+  <!-- Background -->
+  <rect width="900" height="420" fill="#fafafa" rx="12"/>
+
+  <!-- Defs -->
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#555"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#1976d2"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#388e3c"/>
+    </marker>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="450" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="#000">LiveKit Voice Agent — Nova Sonic Native S2S</text>
+  <text x="450" y="52" text-anchor="middle" font-size="12" fill="#666">WebRTC audio transport via LiveKit Server + Amazon Nova Sonic on Bedrock</text>
+
+  <!-- ===== BROWSER CLIENT ===== -->
+  <rect x="30" y="80" width="200" height="160" rx="10" fill="white" stroke="#1976d2" stroke-width="2" filter="url(#shadow)"/>
+  <text x="130" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">🌐 Browser Client</text>
+
+  <rect x="50" y="120" width="160" height="28" rx="5" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="130" y="139" text-anchor="middle" font-size="10" fill="#1565c0">React App (LiveKit SDK)</text>
+
+  <rect x="50" y="155" width="160" height="28" rx="5" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="130" y="174" text-anchor="middle" font-size="10" fill="#1565c0">AudioConference Component</text>
+
+  <rect x="50" y="190" width="160" height="28" rx="5" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="130" y="209" text-anchor="middle" font-size="10" fill="#1565c0">WebRTC (mic + speaker)</text>
+
+  <!-- ===== LIVEKIT SERVER ===== -->
+  <rect x="310" y="80" width="220" height="160" rx="10" fill="white" stroke="#7b1fa2" stroke-width="2" filter="url(#shadow)"/>
+  <text x="420" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="#7b1fa2">🔀 LiveKit Server</text>
+
+  <rect x="330" y="120" width="180" height="28" rx="5" fill="#f3e5f5" stroke="#ce93d8"/>
+  <text x="420" y="139" text-anchor="middle" font-size="10" fill="#6a1b9a">WebRTC SFU (port 7880)</text>
+
+  <rect x="330" y="155" width="180" height="28" rx="5" fill="#f3e5f5" stroke="#ce93d8"/>
+  <text x="420" y="174" text-anchor="middle" font-size="10" fill="#6a1b9a">Room Management</text>
+
+  <rect x="330" y="190" width="180" height="28" rx="5" fill="#f3e5f5" stroke="#ce93d8"/>
+  <text x="420" y="209" text-anchor="middle" font-size="10" fill="#6a1b9a">Agent Dispatch + VAD</text>
+
+  <!-- ===== AGENT WORKER ===== -->
+  <rect x="610" y="80" width="250" height="200" rx="10" fill="white" stroke="#388e3c" stroke-width="2" filter="url(#shadow)"/>
+  <text x="735" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="#388e3c">🤖 Agent Worker (Python)</text>
+
+  <rect x="630" y="120" width="210" height="28" rx="5" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="735" y="139" text-anchor="middle" font-size="10" fill="#2e7d32">main.py (entrypoint)</text>
+
+  <rect x="630" y="155" width="210" height="28" rx="5" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="735" y="174" text-anchor="middle" font-size="10" fill="#2e7d32">AgentSession + Agent</text>
+
+  <rect x="630" y="190" width="210" height="28" rx="5" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="735" y="209" text-anchor="middle" font-size="10" fill="#2e7d32">RealtimeModel (Nova Sonic)</text>
+
+  <rect x="630" y="225" width="210" height="28" rx="5" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="735" y="244" text-anchor="middle" font-size="10" fill="#2e7d32">@function_tool (get_current_time)</text>
+
+  <!-- ===== AMAZON BEDROCK ===== -->
+  <rect x="610" y="320" width="250" height="70" rx="10" fill="white" stroke="#e65100" stroke-width="2" filter="url(#shadow)"/>
+  <text x="735" y="348" text-anchor="middle" font-size="13" font-weight="700" fill="#e65100">☁️ Amazon Bedrock</text>
+  <text x="735" y="370" text-anchor="middle" font-size="10" fill="#bf360c">Nova Sonic 2.0 (S2S bidi stream)</text>
+  <text x="735" y="385" text-anchor="middle" font-size="9" fill="#666">amazon.nova-2-sonic-v1:0</text>
+
+  <!-- ===== ARROWS ===== -->
+
+  <!-- Browser ↔ LiveKit Server (WebRTC) -->
+  <line x1="230" y1="155" x2="308" y2="155" stroke="#1976d2" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <line x1="308" y1="175" x2="230" y2="175" stroke="#1976d2" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <text x="269" y="148" text-anchor="middle" font-size="9" fill="#1976d2">WebRTC</text>
+  <text x="269" y="192" text-anchor="middle" font-size="9" fill="#1976d2">audio</text>
+
+  <!-- LiveKit Server ↔ Agent Worker -->
+  <line x1="530" y1="155" x2="608" y2="155" stroke="#388e3c" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <line x1="608" y1="175" x2="530" y2="175" stroke="#388e3c" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <text x="569" y="148" text-anchor="middle" font-size="9" fill="#388e3c">Agent</text>
+  <text x="569" y="192" text-anchor="middle" font-size="9" fill="#388e3c">Protocol</text>
+
+  <!-- Agent Worker ↔ Bedrock -->
+  <line x1="735" y1="282" x2="735" y2="318" stroke="#e65100" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="760" y="303" font-size="9" fill="#e65100">bidi stream</text>
+
+  <!-- ===== LEGEND ===== -->
+  <rect x="30" y="340" width="250" height="60" rx="8" fill="white" stroke="#ddd"/>
+  <text x="45" y="360" font-size="10" font-weight="600" fill="#333">Legend</text>
+  <line x1="45" y1="375" x2="75" y2="375" stroke="#1976d2" stroke-width="2"/>
+  <text x="80" y="379" font-size="9" fill="#333">WebRTC (low-latency audio)</text>
+  <line x1="45" y1="390" x2="75" y2="390" stroke="#388e3c" stroke-width="2"/>
+  <text x="80" y="394" font-size="9" fill="#333">LiveKit Agent Protocol</text>
+
+  <!-- ===== NOTES ===== -->
+  <text x="310" y="270" font-size="9" fill="#666">• livekit-server --dev (local)</text>
+  <text x="310" y="285" font-size="9" fill="#666">• LiveKit Cloud (production)</text>
+  <text x="310" y="300" font-size="9" fill="#666">• Handles NAT traversal, TURN/STUN</text>
+
+</svg>

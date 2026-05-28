@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+  <rect width="1100" height="720" fill="#fafafa" rx="12"/>
+
+  <defs>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.08"/>
+    </filter>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#666"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="550" y="35" text-anchor="middle" font-size="20" font-weight="800" fill="#1a1a1a">Voice Agent Mental Model</text>
+  <text x="550" y="55" text-anchor="middle" font-size="12" fill="#666">Build and Host Voice Agents on AWS</text>
+
+  <!-- ===== ROW 1: CHANNELS ===== -->
+  <text x="50" y="85" font-size="11" font-weight="700" fill="#555" letter-spacing="0.5">CHANNELS</text>
+
+  <rect x="30" y="95" width="120" height="45" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="90" y="122" text-anchor="middle" font-size="10" font-weight="600" fill="#1565c0">🌐 Web Browser</text>
+
+  <rect x="160" y="95" width="120" height="45" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="220" y="122" text-anchor="middle" font-size="10" font-weight="600" fill="#1565c0">📱 Mobile App</text>
+
+  <rect x="290" y="95" width="120" height="45" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="350" y="122" text-anchor="middle" font-size="10" font-weight="600" fill="#1565c0">📞 Phone (PSTN)</text>
+
+  <rect x="420" y="95" width="130" height="45" rx="8" fill="#e3f2fd" stroke="#1976d2" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="485" y="122" text-anchor="middle" font-size="10" font-weight="600" fill="#1565c0">🎧 Contact Center</text>
+
+  <!-- Arrow down -->
+  <line x1="300" y1="140" x2="300" y2="165" stroke="#666" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- ===== ROW 2: TELEPHONY / TRANSPORT ===== -->
+  <text x="50" y="182" font-size="11" font-weight="700" fill="#555">TELEPHONY &amp; TRANSPORT</text>
+
+  <rect x="30" y="190" width="530" height="40" rx="8" fill="white" stroke="#7b1fa2" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="80" y="215" font-size="9" font-weight="600" fill="#6a1b9a">WebSocket</text>
+  <text x="185" y="215" font-size="9" font-weight="600" fill="#6a1b9a">WebRTC (LiveKit/KVS)</text>
+  <text x="340" y="215" font-size="9" font-weight="600" fill="#6a1b9a">SIP (Twilio/Vonage)</text>
+  <text x="480" y="215" font-size="9" font-weight="600" fill="#6a1b9a">Amazon Connect</text>
+
+  <!-- Arrow down -->
+  <line x1="300" y1="230" x2="300" y2="255" stroke="#666" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+  <!-- ===== ROW 3: TWO COLUMNS — BIDI STREAMING vs CASCADING ===== -->
+  <text x="50" y="270" font-size="11" font-weight="700" fill="#555">ARCHITECTURE</text>
+
+  <!-- LEFT COLUMN: Bidirectional Streaming -->
+  <rect x="30" y="280" width="265" height="230" rx="10" fill="white" stroke="#388e3c" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="30" y="280" width="265" height="28" rx="10" fill="#388e3c"/>
+  <text x="162" y="299" text-anchor="middle" font-size="11" font-weight="700" fill="white">Bidirectional Streaming</text>
+
+  <!-- Bidi Frameworks -->
+  <text x="50" y="325" font-size="9" font-weight="600" fill="#2e7d32">Frameworks:</text>
+  <rect x="50" y="332" width="100" height="20" rx="4" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="100" y="346" text-anchor="middle" font-size="8" fill="#1b5e20">Strands BidiAgent</text>
+  <rect x="155" y="332" width="80" height="20" rx="4" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="195" y="346" text-anchor="middle" font-size="8" fill="#1b5e20">LiveKit Agents</text>
+  <rect x="50" y="356" width="60" height="20" rx="4" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="80" y="370" text-anchor="middle" font-size="8" fill="#1b5e20">Pipecat</text>
+  <rect x="115" y="356" width="60" height="20" rx="4" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="145" y="370" text-anchor="middle" font-size="8" fill="#1b5e20">Raw SDK</text>
+
+  <!-- Bidi Models -->
+  <text x="50" y="398" font-size="9" font-weight="600" fill="#e65100">Models:</text>
+  <rect x="50" y="405" width="120" height="20" rx="4" fill="#fff3e0" stroke="#ffb74d"/>
+  <text x="110" y="419" text-anchor="middle" font-size="8" fill="#e65100">Amazon Nova Sonic 2.0</text>
+  <rect x="175" y="405" width="100" height="20" rx="4" fill="#fff3e0" stroke="#ffb74d"/>
+  <text x="225" y="419" text-anchor="middle" font-size="8" fill="#e65100">Gemini 2.5 Flash</text>
+  <rect x="50" y="429" width="90" height="20" rx="4" fill="#fff3e0" stroke="#ffb74d"/>
+  <text x="95" y="443" text-anchor="middle" font-size="8" fill="#e65100">OpenAI Realtime</text>
+
+  <!-- Bidi characteristics -->
+  <text x="50" y="470" font-size="8" fill="#555">✓ Lowest latency (single model)</text>
+  <text x="50" y="483" font-size="8" fill="#555">✓ Native VAD &amp; barge-in</text>
+  <text x="50" y="496" font-size="8" fill="#555">✓ No STT/TTS pipeline needed</text>
+
+  <!-- RIGHT COLUMN: Cascading -->
+  <rect x="310" y="280" width="250" height="230" rx="10" fill="white" stroke="#1565c0" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="310" y="280" width="250" height="28" rx="10" fill="#1565c0"/>
+  <text x="435" y="299" text-anchor="middle" font-size="11" font-weight="700" fill="white">Cascading (STT→LLM→TTS)</text>
+
+  <!-- Cascading Frameworks -->
+  <text x="330" y="325" font-size="9" font-weight="600" fill="#0d47a1">Frameworks:</text>
+  <rect x="330" y="332" width="80" height="20" rx="4" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="370" y="346" text-anchor="middle" font-size="8" fill="#0d47a1">LiveKit Agents</text>
+  <rect x="415" y="332" width="70" height="20" rx="4" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="450" y="346" text-anchor="middle" font-size="8" fill="#0d47a1">LangChain</text>
+  <rect x="330" y="356" width="60" height="20" rx="4" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="360" y="370" text-anchor="middle" font-size="8" fill="#0d47a1">Pipecat</text>
+
+  <!-- Cascading Models -->
+  <text x="330" y="398" font-size="9" font-weight="600" fill="#e65100">Models (mix &amp; match):</text>
+  <text x="330" y="415" font-size="8" fill="#bf360c">STT: Transcribe, Deepgram, Whisper</text>
+  <text x="330" y="430" font-size="8" fill="#bf360c">LLM: Nova Lite, Claude, Llama, Mistral</text>
+  <text x="330" y="445" font-size="8" fill="#bf360c">TTS: Polly, ElevenLabs, Cartesia</text>
+
+  <!-- Cascading characteristics -->
+  <text x="330" y="470" font-size="8" fill="#555">✓ Swap any component independently</text>
+  <text x="330" y="483" font-size="8" fill="#555">✓ Use any text LLM for reasoning</text>
+  <text x="330" y="496" font-size="8" fill="#555">✗ Higher latency (3 API calls)</text>
+
+  <!-- ===== RIGHT SIDE: AGENTIC INTEGRATION ===== -->
+  <text x="620" y="270" font-size="11" font-weight="700" fill="#555">AGENTIC INTEGRATION</text>
+
+  <rect x="590" y="280" width="480" height="140" rx="10" fill="white" stroke="#c2185b" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <rect x="610" y="295" width="140" height="30" rx="6" fill="#fce4ec" stroke="#f48fb1"/>
+  <text x="680" y="314" text-anchor="middle" font-size="9" font-weight="600" fill="#880e4f">🔧 Function Calling</text>
+
+  <rect x="760" y="295" width="140" height="30" rx="6" fill="#fce4ec" stroke="#f48fb1"/>
+  <text x="830" y="314" text-anchor="middle" font-size="9" font-weight="600" fill="#880e4f">🤖 Sub-Agents (A2A)</text>
+
+  <rect x="910" y="295" width="140" height="30" rx="6" fill="#fce4ec" stroke="#f48fb1"/>
+  <text x="980" y="314" text-anchor="middle" font-size="9" font-weight="600" fill="#880e4f">🔌 MCP Gateways</text>
+
+  <rect x="610" y="335" width="140" height="30" rx="6" fill="#fce4ec" stroke="#f48fb1"/>
+  <text x="680" y="354" text-anchor="middle" font-size="9" font-weight="600" fill="#880e4f">🧠 Memory / RAG</text>
+
+  <rect x="760" y="335" width="140" height="30" rx="6" fill="#fce4ec" stroke="#f48fb1"/>
+  <text x="830" y="354" text-anchor="middle" font-size="9" font-weight="600" fill="#880e4f">📊 Observability</text>
+
+  <rect x="910" y="335" width="140" height="30" rx="6" fill="#fce4ec" stroke="#f48fb1"/>
+  <text x="980" y="354" text-anchor="middle" font-size="9" font-weight="600" fill="#880e4f">🔐 Auth / Identity</text>
+
+  <rect x="610" y="375" width="440" height="30" rx="6" fill="#fce4ec" stroke="#f48fb1"/>
+  <text x="830" y="394" text-anchor="middle" font-size="9" font-weight="600" fill="#880e4f">🛡️ Guardrails / Content Filtering / Safety</text>
+
+  <!-- ===== RIGHT SIDE: HOSTING ===== -->
+  <text x="620" y="440" font-size="11" font-weight="700" fill="#555">HOSTING &amp; DEPLOYMENT</text>
+
+  <rect x="590" y="450" width="480" height="120" rx="10" fill="white" stroke="#0277bd" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <text x="610" y="472" font-size="9" font-weight="600" fill="#01579b">Managed:</text>
+  <rect x="610" y="478" width="155" height="22" rx="4" fill="#e1f5fe" stroke="#81d4fa"/>
+  <text x="687" y="493" text-anchor="middle" font-size="8" fill="#01579b">Bedrock AgentCore Runtime</text>
+  <rect x="772" y="478" width="90" height="22" rx="4" fill="#e1f5fe" stroke="#81d4fa"/>
+  <text x="817" y="493" text-anchor="middle" font-size="8" fill="#01579b">LiveKit Cloud</text>
+  <rect x="869" y="478" width="90" height="22" rx="4" fill="#e1f5fe" stroke="#81d4fa"/>
+  <text x="914" y="493" text-anchor="middle" font-size="8" fill="#01579b">Pipecat Cloud</text>
+
+  <text x="610" y="520" font-size="9" font-weight="600" fill="#01579b">Self-hosted on AWS (open-source):</text>
+  <rect x="610" y="526" width="55" height="22" rx="4" fill="#e0f7fa" stroke="#80deea"/>
+  <text x="637" y="541" text-anchor="middle" font-size="8" fill="#006064">ECS</text>
+  <rect x="672" y="526" width="55" height="22" rx="4" fill="#e0f7fa" stroke="#80deea"/>
+  <text x="699" y="541" text-anchor="middle" font-size="8" fill="#006064">EKS</text>
+  <rect x="734" y="526" width="55" height="22" rx="4" fill="#e0f7fa" stroke="#80deea"/>
+  <text x="761" y="541" text-anchor="middle" font-size="8" fill="#006064">EC2</text>
+  <rect x="796" y="526" width="120" height="22" rx="4" fill="#e0f7fa" stroke="#80deea"/>
+  <text x="856" y="541" text-anchor="middle" font-size="8" fill="#006064">LiveKit on AWS</text>
+  <rect x="923" y="526" width="120" height="22" rx="4" fill="#e0f7fa" stroke="#80deea"/>
+  <text x="983" y="541" text-anchor="middle" font-size="8" fill="#006064">Pipecat on AWS</text>
+
+  <!-- ===== BOTTOM: DECISION FLOW ===== -->
+  <rect x="30" y="590" width="1040" height="110" rx="12" fill="#f5f5f5" stroke="#ddd" filter="url(#shadow)"/>
+  <text x="550" y="615" text-anchor="middle" font-size="13" font-weight="700" fill="#333">Decision Flow</text>
+
+  <text x="60" y="640" font-size="10" fill="#333" font-weight="600">1. Architecture</text>
+  <text x="60" y="655" font-size="8" fill="#555">Bidi streaming or Cascading?</text>
+
+  <text x="230" y="640" font-size="10" fill="#333" font-weight="600">2. Framework</text>
+  <text x="230" y="655" font-size="8" fill="#555">Strands / LiveKit / Pipecat / LangChain</text>
+
+  <text x="440" y="640" font-size="10" fill="#333" font-weight="600">3. Agentic</text>
+  <text x="440" y="655" font-size="8" fill="#555">Tools, MCP, memory, guardrails</text>
+
+  <text x="630" y="640" font-size="10" fill="#333" font-weight="600">4. Deploy</text>
+  <text x="630" y="655" font-size="8" fill="#555">AgentCore / LiveKit Cloud / ECS</text>
+
+  <text x="810" y="640" font-size="10" fill="#333" font-weight="600">5. Connect</text>
+  <text x="810" y="655" font-size="8" fill="#555">Browser / Phone / Contact center</text>
+
+  <text x="970" y="640" font-size="10" fill="#333" font-weight="600">6. Observe</text>
+  <text x="970" y="655" font-size="8" fill="#555">Tracing, metrics, iterate</text>
+
+  <!-- Flow arrows -->
+  <line x1="185" y1="645" x2="220" y2="645" stroke="#ccc" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="400" y1="645" x2="430" y2="645" stroke="#ccc" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="585" y1="645" x2="620" y2="645" stroke="#ccc" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="770" y1="645" x2="800" y2="645" stroke="#ccc" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="935" y1="645" x2="960" y2="645" stroke="#ccc" stroke-width="1" marker-end="url(#arrow)"/>
+
+</svg>
