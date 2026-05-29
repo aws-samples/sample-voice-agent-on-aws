@@ -198,6 +198,115 @@ python client.py --ws-url ws://localhost:8080/ws --profile "General Assistant"
 3. Click **Connect** to establish the session
 4. Click the microphone button and start talking
 
+## AgentCore Deployment
+
+Deploy the agent to Amazon Bedrock AgentCore Runtime for a managed, serverless hosting environment. The deployment script handles IAM role creation, MCP Gateway setup, AgentCore Memory, observability, and A2A sub-agents.
+
+### Prerequisites
+
+- Python 3.12+
+- AWS credentials configured (`~/.aws/credentials` or environment variables)
+- AWS CLI installed and configured
+- Docker (for local image builds) or CodeBuild access (default, no Docker required)
+- Access to Amazon Bedrock with Nova Sonic enabled in your region
+
+### 1. Deploy to AgentCore
+
+```bash
+cd deployment/agentcore
+
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install deployment dependencies
+pip install -r requirements.txt
+
+# Configure AWS credentials (choose one method):
+
+# Option A: Export credentials directly
+export AWS_ACCESS_KEY_ID=<your-access-key>
+export AWS_SECRET_ACCESS_KEY=<your-secret-key>
+export AWS_SESSION_TOKEN=<your-session-token>  # only if using temporary credentials
+
+# Option B: Use an AWS CLI named profile
+export AWS_PROFILE=<your-profile-name>
+
+# Option C: Rely on ~/.aws/credentials default profile (no export needed)
+
+# Set required environment variables
+export AWS_DEFAULT_REGION=us-east-1
+export ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+# Deploy the strands-sonic agent
+python3 deploy.py strands-sonic
+```
+
+The deploy script will:
+- Create an IAM execution role with the required permissions
+- Deploy MCP Gateways for tool access (FAQ knowledge base)
+- Create AgentCore Memory for conversation persistence
+- Set up an observability destination (CloudWatch)
+- Build and deploy the WebSocket server container to AgentCore Runtime
+- Deploy A2A sub-agents (auth, banking, mortgage)
+- Save the deployment configuration to `samples/bidi-streaming/strands-sonic/setup_config.json`
+
+Optional flags:
+
+```bash
+# Deploy to a different region
+python3 deploy.py strands-sonic --region us-west-2
+
+# Use a custom agent name
+python3 deploy.py strands-sonic --agent-name my-voice-agent
+
+# Build the container image locally (requires Docker)
+python3 deploy.py strands-sonic --local-build
+```
+
+### 2. Start the Browser Client
+
+Once the agent is deployed, `client.py` auto-detects the Runtime ARN from the deployment output (`.bedrock_agentcore.yaml`) and connects via a SigV4 presigned URL.
+
+```bash
+cd samples/bidi-streaming/strands-sonic/client
+
+# Create and activate a virtual environment (or reuse the deployment one)
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install client dependencies
+pip install -r requirements.txt
+
+# Start the client (auto-detects the deployed runtime ARN)
+python3 client.py --port 3000
+```
+
+If port 3000 is already in use from a previous session:
+
+```bash
+# macOS
+lsof -ti:3000 | xargs kill -9
+
+# Linux
+fuser -k 3000/tcp
+```
+
+You can also specify the runtime ARN explicitly:
+
+```bash
+python3 client.py --runtime-arn arn:aws:bedrock-agentcore:us-east-1:123456789012:runtime/RUNTIMEID --port 3000
+```
+
+### 3. Clean Up
+
+To tear down all deployed resources:
+
+```bash
+cd deployment/agentcore
+python3 cleanup.py strands-sonic
+```
+
 ## Environment Variables Reference
 
 | Variable | Required | Description |

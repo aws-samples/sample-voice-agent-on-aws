@@ -37,18 +37,30 @@ class AgentCoreCleanup:
         self.websocket_folder = websocket_folder
         
         # Resolve paths relative to the project root directory
-        self.base_dir = Path(__file__).parent.parent
+        self.base_dir = Path(__file__).parent.parent.parent  # project root
         
-        self.config_file = self.base_dir / websocket_folder / "setup_config.json"
-        self.gateway_config_file = self.base_dir / websocket_folder / "gateway_config.json"
-        self.config = None
-        self.gateway_config = None
+        # Search for the sample folder under multiple locations
+        search_paths = [
+            self.base_dir / "samples" / "bidi-streaming" / websocket_folder,
+            self.base_dir / "samples" / "cascading" / websocket_folder,
+            self.base_dir / websocket_folder,  # fallback for legacy flat structure
+        ]
         
-        # Validate folder exists
-        if not (self.base_dir / websocket_folder).exists():
+        self.sample_dir = None
+        for p in search_paths:
+            if p.exists():
+                self.sample_dir = p
+                break
+        
+        if not self.sample_dir:
             self._error(f"Folder not found: {websocket_folder}")
             self._print_available_folders()
             sys.exit(1)
+        
+        self.config_file = self.sample_dir / "setup_config.json"
+        self.gateway_config_file = self.sample_dir / "gateway_config.json"
+        self.config = None
+        self.gateway_config = None
 
     def _print(self, message: str, color: str = Colors.NC):
         """Print colored message"""
@@ -69,9 +81,15 @@ class AgentCoreCleanup:
     def _print_available_folders(self):
         """Print available websocket folders"""
         print("\nAvailable folders:")
-        for folder in ['bedrock-sonic', 'strands-sonic', 'langchain-transcribe-polly', 'pipecat-sonic', 'echo']:
-            if (self.base_dir / folder).exists():
-                print(f"  - {folder}")
+        search_dirs = [
+            self.base_dir / "samples" / "bidi-streaming",
+            self.base_dir / "samples" / "cascading",
+        ]
+        for search_dir in search_dirs:
+            if search_dir.exists():
+                for folder in sorted(search_dir.iterdir()):
+                    if folder.is_dir() and not folder.name.startswith('.'):
+                        print(f"  - {folder.name}")
 
     def _run_command(self, cmd: list, check: bool = False) -> subprocess.CompletedProcess:
         """Run a shell command and return the result"""
@@ -152,7 +170,7 @@ class AgentCoreCleanup:
             return False
         
         # Change to websocket directory
-        websocket_path = self.base_dir / self.websocket_folder / "websocket"
+        websocket_path = self.sample_dir / "websocket"
         if not websocket_path.exists():
             self._error(f"Websocket directory not found: {websocket_path}")
             return False
@@ -617,7 +635,7 @@ class AgentCoreCleanup:
                 agent_id = None
 
                 # Source 1: Read from sub-agent's .bedrock_agentcore.yaml
-                sa_yaml = self.base_dir / self.websocket_folder / "subagents" / sa_folder / ".bedrock_agentcore.yaml"
+                sa_yaml = self.sample_dir / "subagents" / sa_folder / ".bedrock_agentcore.yaml"
                 if sa_yaml.exists():
                     try:
                         with open(sa_yaml, 'r') as f:
@@ -689,7 +707,7 @@ class AgentCoreCleanup:
                         self._info(f"CodeBuild project cleanup skipped: {e}")
 
             # Clean up .bedrock_agentcore.yaml files in sub-agent folders
-            subagents_dir = self.base_dir / self.websocket_folder / "subagents"
+            subagents_dir = self.sample_dir / "subagents"
             if subagents_dir.exists():
                 for sa_folder in ["auth_agent", "banking_agent", "mortgage_agent"]:
                     config_file = subagents_dir / sa_folder / ".bedrock_agentcore.yaml"
