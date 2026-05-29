@@ -55,6 +55,19 @@ project/
 
 ## Part 1 — WebSocket Server (Orchestrator)
 
+### requirements.txt
+
+Always include `aws-sdk-bedrock-runtime` — it provides the Nova Sonic bidirectional streaming client:
+
+```
+strands-agents
+strands-agents-builder
+aws-sdk-bedrock-runtime
+fastapi
+uvicorn[standard]
+websockets
+```
+
 ### server.py — FastAPI Application
 
 The server exposes a `/ws` WebSocket endpoint and splits large audio events at base64 boundaries:
