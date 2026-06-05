@@ -38,13 +38,62 @@ Pipecat owns the hard parts of real-time voice: WebRTC audio transport, Silero v
 
 ## Setup
 
+### 1. Install dependencies
+
 ```bash
 cd samples/cascading/pipecat-transcribe-polly/server
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env   # then edit, or rely on your existing AWS profile/SSO
 ```
+
+### 2. Provide AWS credentials
+
+The Pipecat AWS services use the standard boto3 credential chain, so any of these work — pick one:
+
+- **An existing profile / SSO / instance role** (recommended). If `aws sts get-caller-identity` already succeeds, you're done — skip to step 3.
+- **Static keys**, exported in the shell you'll run the bot from:
+
+  ```bash
+  export AWS_ACCESS_KEY_ID=your-access-key
+  export AWS_SECRET_ACCESS_KEY=your-secret-key
+  # export AWS_SESSION_TOKEN=your-session-token   # only for temporary credentials
+  ```
+
+### 3. Set the application environment variables
+
+`bot.py` reads these at startup (via `python-dotenv`). The defaults below work for most users — set only the ones you want to change. Two ways to provide them:
+
+**Option A — export in your shell** (simplest for a quick run):
+
+```bash
+export AWS_REGION=us-east-1
+export NOVA_MODEL_ID=us.amazon.nova-2-lite-v1:0
+export POLLY_VOICE_ID=Ruth
+export POLLY_ENGINE=generative
+export TRANSCRIBE_LANGUAGE=en-US
+```
+
+**Option B — a `.env` file** in the `server/` directory (persists across runs). Create `server/.env` with:
+
+```dotenv
+# Region for Transcribe, Bedrock (Nova 2 Lite), and Polly
+AWS_REGION=us-east-1
+
+# LLM — Nova 2 Lite cross-region inference profile
+NOVA_MODEL_ID=us.amazon.nova-2-lite-v1:0
+
+# TTS — Polly voice and engine
+POLLY_VOICE_ID=Ruth
+POLLY_ENGINE=generative
+
+# STT — Transcribe streaming language code
+TRANSCRIBE_LANGUAGE=en-US
+```
+
+> **Heads up:** `bot.py` calls `load_dotenv(override=True)`, so values in `.env` override your shell environment. If you rely on an AWS profile or SSO for credentials, do **not** add empty `AWS_ACCESS_KEY_ID=` / `AWS_SECRET_ACCESS_KEY=` lines to `.env` — blank values will override your working credentials and break authentication. Either omit them entirely or comment them out.
+
+See the [Configuration](#configuration) section below for what each variable controls.
 
 ## Run
 
@@ -69,7 +118,6 @@ Open it in your browser, allow microphone access, and click **Connect**. The age
 |------|---------|
 | `server/bot.py` | Pipecat pipeline: Transcribe STT + Nova 2 Lite LLM + Polly TTS, plus session lifecycle |
 | `server/requirements.txt` | Python dependencies (`pipecat-ai` with AWS + Silero + transport extras) |
-| `server/.env.example` | Environment variable template (region, model, voice, language) |
 
 `server/bot.py` is organized into three clearly separated parts:
 
@@ -79,7 +127,7 @@ Open it in your browser, allow microphone access, and click **Connect**. The age
 
 ## Configuration
 
-All configuration is via environment variables (see `.env.example`):
+All configuration is via environment variables (see [Setup](#setup) for how to set them):
 
 | Variable | Default | Notes |
 |----------|---------|-------|
@@ -123,7 +171,7 @@ tts = AWSPollyTTSService(
 
 ## Swapping Providers
 
-Pipecat's value is that providers are interchangeable. To experiment, change one service line and its import — the rest of the pipeline is unchanged. For example, swap Transcribe for Deepgram (`DeepgramSTTService`), Nova for another Bedrock model (still `AWSBedrockLLMService`, different `model`), or Polly for ElevenLabs (`ElevenLabsTTSService`). Add the matching `pipecat-ai[...]` extra to `requirements.txt` and the relevant API key to `.env`.
+Pipecat's value is that providers are interchangeable. To experiment, change one service line and its import — the rest of the pipeline is unchanged. For example, swap Transcribe for Deepgram (`DeepgramSTTService`), Nova for another Bedrock model (still `AWSBedrockLLMService`, different `model`), or Polly for ElevenLabs (`ElevenLabsTTSService`). Add the matching `pipecat-ai[...]` extra to `requirements.txt` and set the relevant API key as an environment variable.
 
 ## Deploy
 
