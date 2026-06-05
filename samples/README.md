@@ -21,6 +21,7 @@ Separate services chained together: STT → LLM → TTS. Higher latency but maxi
 | Sample | Framework | Transport | Key Feature |
 |--------|-----------|-----------|-------------|
 | [livekit-transcribe-polly](cascading/livekit-transcribe-polly/) | LiveKit Agents | WebRTC | Transcribe + Nova Lite + Polly |
+| [pipecat-transcribe-polly](cascading/pipecat-transcribe-polly/) | Pipecat | WebRTC | Transcribe + Nova Lite + Polly, Silero VAD |
 | [langchain-transcribe-polly](cascading/langchain-transcribe-polly/) | LangChain | WebSocket | LangChain agent + custom VAD |
 
 ## Which Sample Should I Start With?

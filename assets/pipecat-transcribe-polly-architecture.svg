@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif">
+  <!-- Background -->
+  <rect width="960" height="460" fill="#fafafa" rx="12"/>
+
+  <!-- Defs -->
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#555"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#1976d2"/>
+    </marker>
+    <marker id="arrow-teal" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#00897b"/>
+    </marker>
+    <filter id="shadow" x="-2%" y="-2%" width="104%" height="104%">
+      <feDropShadow dx="1" dy="2" stdDeviation="2" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Title -->
+  <text x="480" y="32" text-anchor="middle" font-size="18" font-weight="700" fill="#000">Pipecat Voice Agent — Cascading Architecture</text>
+  <text x="480" y="52" text-anchor="middle" font-size="12" fill="#666">Amazon Transcribe (STT) → Nova 2 Lite (LLM) → Amazon Polly (TTS) via a Pipecat pipeline</text>
+
+  <!-- ===== BROWSER CLIENT ===== -->
+  <rect x="30" y="110" width="180" height="150" rx="10" fill="white" stroke="#1976d2" stroke-width="2" filter="url(#shadow)"/>
+  <text x="120" y="135" text-anchor="middle" font-size="13" font-weight="700" fill="#1976d2">🌐 Browser</text>
+  <rect x="45" y="150" width="150" height="24" rx="5" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="120" y="167" text-anchor="middle" font-size="9" fill="#1565c0">Pipecat WebRTC client</text>
+  <rect x="45" y="180" width="150" height="24" rx="5" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="120" y="197" text-anchor="middle" font-size="9" fill="#1565c0">mic + speaker</text>
+  <rect x="45" y="210" width="150" height="24" rx="5" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="120" y="227" text-anchor="middle" font-size="9" fill="#1565c0">served by dev runner</text>
+
+  <!-- ===== PIPECAT BOT PROCESS ===== -->
+  <rect x="280" y="80" width="650" height="350" rx="10" fill="white" stroke="#00897b" stroke-width="2" filter="url(#shadow)"/>
+  <text x="605" y="105" text-anchor="middle" font-size="13" font-weight="700" fill="#00897b">🐦 Pipecat Bot — bot.py (Python process)</text>
+
+  <!-- Transport in/out + VAD -->
+  <rect x="300" y="125" width="150" height="285" rx="8" fill="#e0f2f1" stroke="#80cbc4" stroke-width="1.5"/>
+  <text x="375" y="148" text-anchor="middle" font-size="11" font-weight="600" fill="#00695c">WebRTC Transport</text>
+  <rect x="315" y="165" width="120" height="40" rx="6" fill="white" stroke="#80cbc4"/>
+  <text x="375" y="183" text-anchor="middle" font-size="9" fill="#00695c">transport.input()</text>
+  <text x="375" y="196" text-anchor="middle" font-size="8" fill="#666">audio in</text>
+  <rect x="315" y="290" width="120" height="40" rx="6" fill="white" stroke="#80cbc4"/>
+  <text x="375" y="308" text-anchor="middle" font-size="9" fill="#00695c">transport.output()</text>
+  <text x="375" y="321" text-anchor="middle" font-size="8" fill="#666">audio out</text>
+  <rect x="315" y="350" width="120" height="44" rx="6" fill="#fff8e1" stroke="#ffe082"/>
+  <text x="375" y="369" text-anchor="middle" font-size="9" font-weight="600" fill="#f57f17">Silero VAD</text>
+  <text x="375" y="383" text-anchor="middle" font-size="8" fill="#666">turn-taking</text>
+
+  <!-- Pipeline stages -->
+  <!-- STT -->
+  <rect x="500" y="130" width="200" height="62" rx="8" fill="#fff3e0" stroke="#ffb74d" stroke-width="1.5"/>
+  <text x="600" y="152" text-anchor="middle" font-size="11" font-weight="600" fill="#e65100">1. STT — AWSTranscribeSTTService</text>
+  <text x="600" y="168" text-anchor="middle" font-size="9" fill="#bf360c">Amazon Transcribe (streaming)</text>
+  <text x="600" y="182" text-anchor="middle" font-size="8" fill="#666">speech → text</text>
+
+  <!-- LLM -->
+  <rect x="500" y="225" width="200" height="62" rx="8" fill="#e8f5e9" stroke="#a5d6a7" stroke-width="1.5"/>
+  <text x="600" y="247" text-anchor="middle" font-size="11" font-weight="600" fill="#2e7d32">2. LLM — AWSBedrockLLMService</text>
+  <text x="600" y="263" text-anchor="middle" font-size="9" fill="#1b5e20">Nova 2 Lite (Bedrock Converse)</text>
+  <text x="600" y="277" text-anchor="middle" font-size="8" fill="#666">text → text</text>
+
+  <!-- TTS -->
+  <rect x="500" y="320" width="200" height="62" rx="8" fill="#e3f2fd" stroke="#90caf9" stroke-width="1.5"/>
+  <text x="600" y="342" text-anchor="middle" font-size="11" font-weight="600" fill="#1565c0">3. TTS — AWSPollyTTSService</text>
+  <text x="600" y="358" text-anchor="middle" font-size="9" fill="#0d47a1">Amazon Polly (generative/neural)</text>
+  <text x="600" y="372" text-anchor="middle" font-size="8" fill="#666">text → speech</text>
+
+  <!-- Context aggregators -->
+  <rect x="745" y="195" width="160" height="125" rx="8" fill="#f3e5f5" stroke="#ce93d8" stroke-width="1.5"/>
+  <text x="825" y="218" text-anchor="middle" font-size="10" font-weight="600" fill="#6a1b9a">🧠 LLM Context</text>
+  <text x="825" y="240" text-anchor="middle" font-size="9" fill="#4a148c">user_aggregator</text>
+  <text x="825" y="258" text-anchor="middle" font-size="9" fill="#4a148c">assistant_aggregator</text>
+  <text x="825" y="280" text-anchor="middle" font-size="8" fill="#666">multi-turn history</text>
+  <text x="825" y="296" text-anchor="middle" font-size="8" fill="#666">+ system prompt</text>
+
+  <!-- Pipeline arrows (vertical between stages) -->
+  <line x1="600" y1="192" x2="600" y2="223" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="600" y1="287" x2="600" y2="318" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- transport.input -> STT -->
+  <line x1="435" y1="185" x2="498" y2="161" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <!-- TTS -> transport.output -->
+  <line x1="498" y1="351" x2="437" y2="320" stroke="#555" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- LLM <-> Context aggregators -->
+  <line x1="700" y1="250" x2="743" y2="250" stroke="#7b1fa2" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow)"/>
+
+  <!-- ===== CONNECTION ARROWS Browser <-> Bot ===== -->
+  <line x1="210" y1="170" x2="278" y2="170" stroke="#1976d2" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <line x1="278" y1="200" x2="210" y2="200" stroke="#1976d2" stroke-width="2" marker-end="url(#arrow-blue)"/>
+  <text x="244" y="162" text-anchor="middle" font-size="8" fill="#1976d2">WebRTC</text>
+  <text x="244" y="215" text-anchor="middle" font-size="8" fill="#1976d2">audio</text>
+
+  <!-- ===== LEGEND ===== -->
+  <rect x="30" y="300" width="220" height="130" rx="8" fill="white" stroke="#ddd"/>
+  <text x="45" y="320" font-size="10" font-weight="600" fill="#333">Pipeline Flow</text>
+  <rect x="45" y="330" width="12" height="12" rx="2" fill="#fff3e0" stroke="#ffb74d"/>
+  <text x="65" y="340" font-size="9" fill="#333">STT: Audio → Text (Transcribe)</text>
+  <rect x="45" y="350" width="12" height="12" rx="2" fill="#e8f5e9" stroke="#a5d6a7"/>
+  <text x="65" y="360" font-size="9" fill="#333">LLM: Reasoning (Nova 2 Lite)</text>
+  <rect x="45" y="370" width="12" height="12" rx="2" fill="#e3f2fd" stroke="#90caf9"/>
+  <text x="65" y="380" font-size="9" fill="#333">TTS: Text → Audio (Polly)</text>
+  <rect x="45" y="390" width="12" height="12" rx="2" fill="#e0f2f1" stroke="#80cbc4"/>
+  <text x="65" y="400" font-size="9" fill="#333">Transport + Silero VAD (Pipecat)</text>
+  <rect x="45" y="410" width="12" height="12" rx="2" fill="#f3e5f5" stroke="#ce93d8"/>
+  <text x="65" y="420" font-size="9" fill="#333">Conversation context aggregators</text>
+
+</svg>
