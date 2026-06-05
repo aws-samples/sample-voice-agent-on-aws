@@ -1,0 +1,12 @@
+# Cascading voice agent on Pipecat: Transcribe + Nova 2 Lite + Polly.
+# Python 3.11+ (Pipecat requirement).
+
+# Pipecat with the AWS service integrations (Transcribe, Bedrock, Polly) and
+# Silero VAD. The transport extras are all required because bot.py imports the
+# Daily / WebSocket / WebRTC transport params at module load time (matching the
+# official pipecat voice-aws.py example); `webrtc` is what the local dev runner
+# actually uses, `daily` and `websocket` keep the top-level imports satisfied.
+# `runner` pulls in the FastAPI/uvicorn dev server that `python bot.py` starts.
+pipecat-ai[aws,silero,webrtc,daily,websocket,runner]>=0.0.105
+
+python-dotenv>=1.0.0

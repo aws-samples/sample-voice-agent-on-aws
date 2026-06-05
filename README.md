@@ -96,6 +96,7 @@ All AgentCore samples follow the same pattern: a Python server packaged as a Doc
 | [pipecat-sonic](samples/bidi-streaming/pipecat-sonic/) | Bidirectional Streaming | Pipecat pipeline | WebSocket | Open-source framework, RTVI/Protobuf, Silero VAD |
 | [livekit-sonic](samples/bidi-streaming/livekit-sonic/) | Bidirectional Streaming | LiveKit Agents | WebRTC | Room management, multi-participant, LiveKit Cloud |
 | [livekit-transcribe-polly](samples/cascading/livekit-transcribe-polly/) | Cascading (STT→LLM→TTS) | LiveKit Agents | WebRTC | Flexible pipeline, swap any STT/LLM/TTS |
+| [pipecat-transcribe-polly](samples/cascading/pipecat-transcribe-polly/) | Cascading (STT→LLM→TTS) | Pipecat | WebRTC | Pipeline-based, Silero VAD, swap any STT/LLM/TTS |
 | [langchain-transcribe-polly](samples/cascading/langchain-transcribe-polly/) | Cascading (STT→LLM→TTS) | LangChain | WebSocket | Text LLM with voice pipeline, custom VAD |
 | [webrtc-kvs-sonic](samples/bidi-streaming/webrtc-kvs-sonic/) | Bidirectional Streaming | aiortc + KVS | WebRTC | KVS TURN/STUN, NAT traversal, low latency |
 
@@ -121,6 +122,10 @@ Uses the [LiveKit Agents](https://docs.livekit.io/agents/) framework with `livek
 
 Same LiveKit Agents framework but with the cascading pipeline: Amazon Transcribe (STT) → Nova 2 Lite (LLM) → Amazon Polly (TTS). Higher latency than native S2S but lets you swap any STT, LLM, or TTS independently.
 
+### [pipecat-transcribe-polly](samples/cascading/pipecat-transcribe-polly/README.md) — Pipecat Cascading (Transcribe + Nova Lite + Polly)
+
+The [Pipecat](https://github.com/pipecat-ai/pipecat) framework wired as a cascading pipeline: Amazon Transcribe (STT) → Nova 2 Lite (LLM) → Amazon Polly (TTS). Pipecat handles WebRTC transport, Silero VAD, turn-taking, and interruptions; the same `bot.py` runs locally and deploys unchanged to Pipecat Cloud.
+
 ### [langchain-transcribe-polly](samples/cascading/langchain-transcribe-polly/README.md) — LangChain Cascading Architecture
 
 Demonstrates the STT → Agent → TTS cascading pattern using Amazon Transcribe, LangChain with Bedrock Nova 2 Lite, and Amazon Polly over WebSocket. Deployed on AgentCore Runtime.
@@ -143,6 +148,7 @@ Uses WebRTC peer connections (via `aiortc`) instead of WebSocket for audio trans
 │   │   └── webrtc-kvs-sonic/              #   aiortc + KVS (WebRTC)
 │   └── cascading/                         # Cascading (STT→LLM→TTS) samples
 │       ├── livekit-transcribe-polly/      #   LiveKit + Transcribe + Nova Lite + Polly
+│       ├── pipecat-transcribe-polly/      #   Pipecat + Transcribe + Nova Lite + Polly
 │       └── langchain-transcribe-polly/    #   LangChain + Transcribe + Polly
 ├── deployment/
 │   ├── agentcore/                         # AgentCore deploy/cleanup scripts
