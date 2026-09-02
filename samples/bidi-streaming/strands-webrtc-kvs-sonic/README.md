@@ -17,7 +17,7 @@ This sample extends [`psantus/strands-bidir-nova`](https://github.com/psantus/st
 
 ## Architecture
 
-![Architecture](diagrams/architecture.png)
+![Deployed architecture](diagrams/deployed-architecture.png)
 
 ### Control plane: HTTP signaling
 
