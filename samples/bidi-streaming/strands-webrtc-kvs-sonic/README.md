@@ -1,5 +1,8 @@
 # Strands BidiAgent + Nova Sonic on AgentCore
 
+## Notice
+The code is for PoC or test staging purpose, please verify and evaluate before deploying to production
+
 A real-time voice recipe assistant built with **Strands BidiAgent**, **Amazon Nova Sonic 2**, **WebRTC**, and **Amazon Bedrock AgentCore Runtime**. The browser streams microphone audio to the agent and receives synthesized speech over the same peer connection.
 
 This sample extends [`psantus/strands-bidir-nova`](https://github.com/psantus/strands-bidir-nova) with deployment and reliability updates for AgentCore VPC mode, and is published under `samples/bidi-streaming/strands-webrtc-kvs-sonic` in this repository.
