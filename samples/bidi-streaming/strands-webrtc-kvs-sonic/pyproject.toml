@@ -1,0 +1,32 @@
+[project]
+name = "bidir-streaming-voice-agent"
+version = "0.1.0"
+description = "Voice-controlled kitchen assistant using Strands BidiAgent and Amazon Nova Sonic"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "strands-agents[bidi]==1.28.0",
+    "aws-sdk-bedrock-runtime==0.7.0",
+    "boto3==1.43.85",
+    "requests==2.32.5",
+    "fastapi==0.135.1",
+    "uvicorn[standard]==0.41.0",
+    "aiortc==1.12.0",
+    "av==14.4.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "pytest>=8.0.0",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

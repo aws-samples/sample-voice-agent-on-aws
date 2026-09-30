@@ -1,0 +1,22 @@
+# Copy this to terraform.tfvars and fill in your values
+# terraform.tfvars is gitignored - do not commit it
+
+# Bedrock Knowledge Base ID for recipe search (required)
+knowledge_base_id = ""
+
+# AWS CLI profile when running Terraform directly.
+# The Make plan/apply targets override this with AWS_PROFILE=<profile>.
+# aws_profile = "default"
+
+# Physical AZ IDs supported by AgentCore in the selected region
+availability_zone_ids = ["use1-az1", "use1-az2"]
+
+# Cognito users to create (email => password)
+# cognito_users = {
+#   "user@example.com" = "YourPassword1!"
+# }
+
+# Cognito callback URLs (add your CloudFront domain after first deploy)
+cognito_callback_urls = [
+  "http://localhost:5173"
+]

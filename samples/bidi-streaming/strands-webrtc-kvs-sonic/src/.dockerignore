@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+.env
+.env.*
+dependencies.zip
+dependencies.hash
+.bedrock_agentcore.yaml
+*.md
